@@ -25,7 +25,7 @@ class govukurls(object):
         Look up urls on GOV.UK content API
         """
 
-        self.urldicts = [api_lookup(i) for i in self.dedupurls]
+        self.urldicts = self.dedupurls.apply(api_lookup)
 
 def api_lookup(x):
     
