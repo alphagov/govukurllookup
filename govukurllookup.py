@@ -3,6 +3,7 @@
 import re, requests
 import pandas as pd
 from datetime import datetime
+from bs4 import BeautifulSoup
 
 class govukurls(object):
     """
@@ -71,4 +72,22 @@ def extract_text(self, list_of_dict):
             # remove remaining excess whitespace
         txt = " ".join(txt.encode('utf-8').split())
         urltext.append(page_path,txt)
+    
     return(urltext)
+
+def import_urls(self, fname):
+    """#import the csv as a dataframe but extract the first column as a panda series so it is typed correctly for govukurls class"""
+    self.trunc_urls = pd.read_csv(fname).iloc[:,0] 
+
+def wtf(oname):
+"""write data structure to (a .csv) file."""
+    f = open(oname,'w')
+    f.write('url,text\n')
+    for row in urltext:
+        f.write(row.url+','+row.text+'\n')
+    f.close()
+    return(0)
+
+
+
+
