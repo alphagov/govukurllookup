@@ -12,7 +12,7 @@ The module makes use of pandas for a range of functions when dealing with tabula
 
 ```
 import pandas as pd
-from govukurllookup import govukurllookup
+from govukurllookup import *
 
 # Import urls from a csv file
 

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='govukurllookup',
-      version='0.0.0.9000',
+      version='0.0.0.9001',
       description='Helper module to lookup GOV.UK content API',
       url='http://github.com/ukgovdatascience/govukurllookup',
       author='Matthew Upson',
