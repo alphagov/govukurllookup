@@ -25,7 +25,9 @@ class govukurls(object):
         Look up urls on GOV.UK content API
         """
 
-        self.urldicts = [api_lookup(i) for i in self.dedupurls]
+        self.urldicts = self.dedupurls.apply(api_lookup)
+
+        return self.urldicts
 
 def api_lookup(x):
     
@@ -48,3 +50,25 @@ def api_lookup(x):
         print('Returning url dict without api lookup')
     
     return results
+
+def extract_text(self, list_of_dict):
+    """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
+    urltext = []
+    for page in list_of_dict:
+        page_path = json_dict['base_path']
+        page_title = json_dict['title']
+        page_desc = json_dict['description']
+        page_body = json_dict['details']['Body'] 
+
+        soup = BeautifulSoup(page_body,'html.parser') #parse html using bs4
+            # kill all script and style elements
+        for script in soup(["script", "style"]):
+            script.extract()    # rip it out
+            # extract all text from html 
+        txt = " ".join(page_title, page_desc, soup.getText())
+            # format string by replacing tabs, new lines and commas
+        txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
+            # remove remaining excess whitespace
+        txt = " ".join(txt.encode('utf-8').split())
+        urltext.append(page_path,txt)
+    return(urltext)
