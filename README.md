@@ -29,4 +29,8 @@ len(foo.urls) - len(foo.dedupurls)
 
 foo.lookup()
 
+# A list of dicts is returned
+
+foo.urldicts
+
 ```
