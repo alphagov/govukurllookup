@@ -21,6 +21,7 @@ class govukurls(object):
         self.dedupurls = self.urls.drop_duplicates().dropna()
 
 
+
     def lookup(self):
         """
         Look up urls on GOV.UK content API
@@ -52,14 +53,14 @@ def api_lookup(x):
     
     return results
 
-def extract_text(self, list_of_dict):
+def extract_text(list_of_dict):
     """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
     urltext = []
     for page in list_of_dict:
-        page_path = json_dict['base_path']
-        page_title = json_dict['title']
-        page_desc = json_dict['description']
-        page_body = json_dict['details']['Body'] 
+        page_path = page['base_path']
+        page_title = page['title']
+        page_desc = page['description']
+        page_body = page['details']['body'] 
 
         soup = BeautifulSoup(page_body,'html.parser') #parse html using bs4
             # kill all script and style elements
@@ -73,20 +74,11 @@ def extract_text(self, list_of_dict):
         txt = " ".join(txt.encode('utf-8').split())
         urltext.append(page_path,txt)
     
-    return(urltext)
+    return urltext
 
-def import_urls(self, fname):
-    """#import the csv as a dataframe but extract the first column as a panda series so it is typed correctly for govukurls class"""
-    self.trunc_urls = pd.read_csv(fname).iloc[:,0] 
 
-def wtf(oname):
-"""write data structure to (a .csv) file."""
-    f = open(oname,'w')
-    f.write('url,text\n')
-    for row in urltext:
-        f.write(row.url+','+row.text+'\n')
-    f.close()
-    return(0)
+
+
 
 
 
