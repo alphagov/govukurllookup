@@ -53,27 +53,43 @@ def api_lookup(x):
     
     return results
 
+class UrlData(object):
+    def __init__(self, path, text):
+        self.path = path
+        self.text = text
+
+        
 def extract_text(list_of_dict):
     """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
     urltext = []
+    errors = []
     for page in list_of_dict:
-        page_path = page['base_path']
-        page_title = page['title']
-        page_desc = page['description']
-        page_body = page['details']['body'] 
 
-        soup = BeautifulSoup(page_body,'html.parser') #parse html using bs4
-            # kill all script and style elements
-        for script in soup(["script", "style"]):
-            script.extract()    # rip it out
-            # extract all text from html 
-        txt = " ".join(page_title, page_desc, soup.getText())
-            # format string by replacing tabs, new lines and commas
-        txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
-            # remove remaining excess whitespace
-        txt = " ".join(txt.encode('utf-8').split())
-        urltext.append(page_path,txt)
-    
+        try:
+            page_path = page['base_path']
+            page_title = page['title']
+            page_desc = page['description']
+            page_body = page['details']['body'] 
+
+            soup = BeautifulSoup(page_body,'html.parser') #parse html using bs4
+                # kill all script and style elements
+            for script in soup(["script", "style"]):
+                script.extract()    # rip it out
+                # extract all text from html 
+            txt = "{0} {0} {0}".format([page_title, page_desc, soup.getText()])
+                # format string by replacing tabs, new lines and commas
+            txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
+                # remove remaining excess whitespace
+            txt = " ".join(txt.encode('utf-8').split())
+            urltext.append(UrlData(page_path,txt))
+
+        except Exception as e:
+            print(e)
+            print('Error lextracting text from ' + page_path)
+            errors.append(page_path)
+            print('Returning url text without html parsing')
+
+    print('There were {:d} urls without body text'.format(len(errors)))
     return urltext
 
 
