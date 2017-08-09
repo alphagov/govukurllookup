@@ -60,7 +60,12 @@ class UrlData(object):
 
         
 def extract_text(list_of_dict):
-    """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
+    """
+    Loop through list and for each dictionary extract the url and 
+    all content items. Concatenate content items and clean. 
+    Give back a url, text list
+    
+    """
     urltext = []
     errors = []
     for page in list_of_dict:
