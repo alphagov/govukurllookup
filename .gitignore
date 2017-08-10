@@ -3,3 +3,4 @@ __pycache__
 *.csv
 govukurllookup.egg-info
 .DS_store
+.cache/
