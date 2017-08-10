@@ -46,12 +46,23 @@ def api_lookup(x):
         r = requests.get(url)
         results = r.json()
 
+        if results['document_type'] == "redirect":
+            url = "https://www.gov.uk" + x
+            s = requests.get(url)
+            redirected_url = s.url
+            redirected_api =redirected_url.replace("https://www.gov.uk", 
+                "https://www.gov.uk/api/content")
+            r = requests.get(redirected_api)
+            results = r.json()
+
+
     except Exception as e:
         print(e)
         print('Error looking up ' + url)
         print('Returning url dict without api lookup')
     
     return results
+
 
 class UrlData(object):
     def __init__(self, path, text):
@@ -60,12 +71,7 @@ class UrlData(object):
 
         
 def extract_text(list_of_dict):
-    """
-    Loop through list and for each dictionary extract the url and 
-    all content items. Concatenate content items and clean. 
-    Give back a url, text list
-    
-    """
+    """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
     urltext = []
     errors = []
     for page in list_of_dict:
@@ -90,7 +96,7 @@ def extract_text(list_of_dict):
 
         except Exception as e:
             print(e)
-            print('Error lextracting text from ' + page_path)
+            print('Error extracting text from ' + page_path)
             errors.append(page_path)
             print('Returning url text without html parsing')
 
