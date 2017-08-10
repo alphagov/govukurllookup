@@ -69,7 +69,14 @@ class UrlData(object):
         self.path = path
         self.text = text
 
-        
+def safeget(dct, *keys):
+    for key in keys:
+        try:
+            dct = dct[key]
+        except KeyError:
+            return None
+    return dct
+
 def extract_text(list_of_dict):
     """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
     urltext = []
@@ -80,7 +87,8 @@ def extract_text(list_of_dict):
             page_path = page['base_path']
             page_title = page['title']
             page_desc = page['description']
-            page_body = page['details']['body'] 
+            page_body = safeget('details','body')
+            page_body = safeget('details','body') 
 
             soup = BeautifulSoup(page_body,'html.parser') #parse html using bs4
                 # kill all script and style elements
