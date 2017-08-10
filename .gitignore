@@ -2,3 +2,5 @@ __pycache__
 *.pyc
 *.csv
 govukurllookup.egg-info
+.DS_store
+__init__.py create_urltext_for_LDA.py govukurllookup.py setup.py
