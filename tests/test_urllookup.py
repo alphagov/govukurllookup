@@ -16,10 +16,6 @@ def test_api_lookup():
 
     assert api_lookup('/government/news/hertfordshire-apprentice-wins-national-apprenticeship-award') == expected
 
-def test_govukurls_class_init(self):
-
-    assert (len(self.urlsclass.dedupurls) < len(self.urls))
-    assert (len(self.urlsclass.dedupurls) == len(self.urls) / 2)
 
 
 
@@ -47,6 +43,10 @@ class TestCleanUrls(unittest.TestCase):
         
         self.urlsclass = govukurls(self.urls)
 
+    def test_govukurls_class_init(self):
+
+        assert (len(self.urlsclass.dedupurls) < len(self.urls))
+        assert (len(self.urlsclass.dedupurls) == len(self.urls) / 2)
 #    def tearDown(self):
 #
     
