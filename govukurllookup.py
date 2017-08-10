@@ -88,9 +88,11 @@ def extract_text(list_of_dict):
             page_title = page['title']
             page_desc = page['description']
             page_body = safeget('details','body')
-            page_body = safeget('details','body') 
+            page_parts = safeget('details','parts') 
 
-            soup = BeautifulSoup(page_body,'html.parser') #parse html using bs4
+            page_text =page_body + page_parts
+
+            soup = BeautifulSoup(page_text,'html.parser') #parse html using bs4
                 # kill all script and style elements
             for script in soup(["script", "style"]):
                 script.extract()    # rip it out
