@@ -1,56 +1,71 @@
+""" Tests for the govukurls class from the govukurllookup module.
+"""
 # coding: utf-8
 
-import unittest
 import pytest
-
+import requests
+from govukurllookup import api_lookup, govukurls
 import pandas as pd
-import re, requests
-import sys
-sys.path.append('/Users/ellieking/govuk_api')
-from govukurllookup import *
 
-def test_api_lookup():
-    r = requests.get('https://www.gov.uk/api/content/government/news/national-apprenticeship-award-winners-announced')
+def is_connected():
+    """
+    Check that gov.uk is accessible.
 
-    expected = r.json()
+    Used to skip tests if no internet connection is available.
+    """
+    import socket
+    try:
+        host = socket.gethostbyname("www.gov.uk")
+        socket.create_connection((host, 80), 2)
+        return True
+    except:
+        pass
+    return False
 
-    assert api_lookup('/government/news/hertfordshire-apprentice-wins-national-apprenticeship-award') == expected
+class TestGovukurls(object):
 
+    def setup_method(self):
+        """
+        Setup test conditions for subsequent method calls.
+        For more info, see: https://docs.pytest.org/en/2.7.3/xunit_setup.html
+        """
 
+        # Load in test data as pandas dataframe
+        # Test urls are duplicated twice.
 
+        self.urls = pd.read_csv('tests/test_urls.csv')
 
-class TestCleanUrls(unittest.TestCase):
+        # Note that self.urls is a dataframe so we must specify the appropriate
+        # column: `url`
 
-    def setUp(self):#runs everytime a test id run
-        
-        # Load in test data
+        self.urlsclass = govukurls(self.urls.url)
 
-        self.urls = [
-                '/',
-                '/government/world/turkey',
-                '/government/publications/crown-commercial-service-customer-update-september-2016/crown-commercial-service-update-september-2016',
-                '/guidance/guidance-for-driving-examiners-carrying-out-driving-tests-dt1/05-candidates-with-an-impairment',
-                '/search/this-is/a-search/url',
-                '/help/this/is/a/help/url',
-                '/contact/this/is/a/contact/url'
-                ]
+    def test_govukurls_deduplication(self):
+        """
+        Test that duplicate urls are successfully removed by the init method.
+        """
 
-        self.urls = self.urls * 2
+        assert len(self.urlsclass.dedupurls) < len(self.urls)
+        assert len(self.urlsclass.dedupurls) == len(self.urls) / 2
 
-        # Convert to pandas series (as expected by the class)
+    @pytest.mark.skipif(not is_connected(), reason="Cannot connect to gov.uk")
+    def test_api_lookup(self):
+        """
+        Test the api_lookup function works for a single url.
 
-        self.urls = pd.Series(self.urls, name='full_url')
-        
-        self.urlsclass = govukurls(self.urls)
+        Uses the first deduplicated url to check that the api_lookup function
+        returns the same as a simple api call using requests.
 
-    def test_govukurls_class_init(self):
+        Note that an internet connection is required for these api calls!
+        The test will be skipped if this is not available.
+        """
 
-        assert (len(self.urlsclass.dedupurls) < len(self.urls))
-        assert (len(self.urlsclass.dedupurls) == len(self.urls) / 2)
-#    def tearDown(self):
-#
-    
+        # Set up the url for the api call
 
+        expected_url = 'https://www.gov.uk/api/content{}'.format(self.urlsclass.dedupurls[0])
 
+        # Make request and extract json.
 
+        expected = requests.get(expected_url).json()
 
+        assert api_lookup(self.urlsclass.dedupurls[0]) == expected

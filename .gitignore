@@ -1,6 +1,6 @@
 __pycache__
 *.pyc
 *.csv
-govukurllookup.egg-info
+*egg-info
 .DS_store
-.cache/
+.cache
