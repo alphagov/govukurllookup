@@ -1,15 +1,50 @@
 
 language: python
+
+# Run the tests on the following python versions
+
 python:
   - 2.7
+  - 3.6
+  - 3.6-dev
+
+# Allow tests on the 3.6-dev version to fail.
+# Don't wait for tests on 3.6-dev to finish before
+# reporting success.
+
+matrix:
+    allow_failures:
+        - python: 3.6-dev 
+    fast_finish: true
+
+# Cache all the pip dependencies on travis for faster builds
+
 cache: pip
+
+# Setting sudo to false will run the job on travis's 
+# containerised infrastructure which may be slightly faster.
+
+sudo: false
+
+# When pulling the repo from git, only pull the three most
+# recent commits, for speed.
+
+git:
+    depth: 3
+
+# Install the govukurllookup package locally, its dependencies,
+# and the test modules.
 
 install:
   - pip install -e .
   - pip install -r requirements.txt
-  - pip install pytest
-  - pip install codecov
+  - pip install pytest pytest-cov codecov
 
-script: py.test --cov=./
+# Run the tests verbosely (-v) and produce a coverage report
+# in the local folder.
+
+script: py.test -v --cov=./
+
+# Call codecov to send the coverage report to codecov.io
 
 after_success: codecov
