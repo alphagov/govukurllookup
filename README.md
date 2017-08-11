@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/ukgovdatascience/govukurllookup.svg?branch=master)](https://travis-ci.org/ukgovdatascience/govukurllookup)
-# Helper module for using the GOV.UK content API (v0.0.0.9001)
+# Helper module for using the GOV.UK content API (v0.0.0.9002)
 
 Helper module for returning data from the GOV.UK content API.
 
