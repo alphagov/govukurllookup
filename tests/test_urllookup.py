@@ -69,3 +69,20 @@ class TestGovukurls(object):
         expected = requests.get(expected_url).json()
 
         assert api_lookup(self.urlsclass.dedupurls[0]) == expected
+
+    @pytest.mark.skipif(not is_connected(), reason="Cannot connect to gov.uk")
+    def test_lookup_method(self):
+        """
+        Test the lookup method function works for a series of urls.
+
+        Note that an internet connection is required for these api calls!
+        The test will be skipped if this is not available.
+        """
+
+        # Run lookup methos
+
+        self.urlsclass.lookup()
+
+        assert len(self.urlsclass.urldicts) == len(self.urlsclass.dedupurls)
+        
+        # TODO: test a redirect url
