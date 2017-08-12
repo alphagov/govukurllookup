@@ -1,8 +1,11 @@
+"""govukurls class and methods for handling lookups using the gov.uk 
+content api
+"""
 # coding: utf-8
 
-import re, requests
-import pandas as pd
 from datetime import datetime
+import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 
 class govukurls(object):
@@ -17,9 +20,12 @@ class govukurls(object):
 
         self.urls = urls
         assert isinstance(self.urls, pd.core.series.Series)
-        
+
         self.dedupurls = self.urls.drop_duplicates().dropna()
 
+        # Instantiate class objects for later use.
+
+        self.urldicts = pd.Series()
 
 
     def lookup(self):
@@ -31,36 +37,45 @@ class govukurls(object):
 
         return self.urldicts
 
-def api_lookup(x):
+def api_lookup(url):
     
     '''
-    Simple function to lookup a url on the GOV.UK content API
-    Takes as an input the dictionary output by clean_url()
-    '''
+    Lookup a url on the GOV.UK content API
 
-    url = "https://www.gov.uk/api/content" + x
-    
+    Take a single url string as input, and returns a dict returned by an api
+    call to the content api.
+    '''
+    # Form the api url
+
+    api_url = "https://www.gov.uk/api/content{}".format(url)
+
     try:
-       
-        # read JSON result into r
-        r = requests.get(url)
-        results = r.json()
+
+        # Lookup the url and return the json
+
+        results = requests.get(api_url).json()
+
+        # Check whether api returned a redirect, and if so look up the api_url
+        # using a standard http call so that we are returned the redirect url.
 
         if results['document_type'] == "redirect":
-            url = "https://www.gov.uk" + x
-            s = requests.get(url)
-            redirected_url = s.url
-            redirected_api =redirected_url.replace("https://www.gov.uk", 
-                "https://www.gov.uk/api/content")
-            r = requests.get(redirected_api)
-            results = r.json()
+            redirect_url = "https://www.gov.uk" + url
+            redirect = requests.get(redirect_url)
 
+            # Extract redirected url, and use this in a new call to the
+            # content api.
+
+            redirected_url = redirect.url
+            redirected_api = redirected_url.replace(
+                "https://www.gov.uk",
+                "https://www.gov.uk/api/content"
+                )
+            results = requests.get(redirected_api).json()
 
     except Exception as e:
         print(e)
-        print('Error looking up ' + url)
-        print('Returning url dict without api lookup')
-    
+        print('Error looking up ' + api_url)
+
     return results
 
 
