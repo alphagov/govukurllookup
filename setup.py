@@ -9,5 +9,5 @@ setup(name='govukurllookup',
       author_email='matthew.upson@digital.cabinet-office.gov.uk',
       license='MIT',
       zip_safe=False,
-      install_requires=['pandas', 'beautifulsoup4']
+      install_requires=['requests', 'pandas', 'beautifulsoup4']
      )
