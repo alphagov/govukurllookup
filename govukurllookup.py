@@ -104,7 +104,7 @@ def extract_text(page):
     Concatenate content items and clean.
     Give back a dict containing url and text
     """
-    urltext = dict()
+    urltext = dict.fromkeys(['url', 'text'])
 
     try:
 
