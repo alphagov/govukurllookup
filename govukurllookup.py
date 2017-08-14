@@ -99,7 +99,7 @@ def extract_text(list_of_dict):
     for page in list_of_dict:
 
         try:
-            page_path = safeget(page, 'base_path')
+            page_path = safeget(page, 'base_path').encode('utf-8').strip()
             page_title = safeget(page, 'title')
             page_desc = safeget(page, 'description')
             page_body = safeget(page, 'details','body')
@@ -121,8 +121,7 @@ def extract_text(list_of_dict):
             txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
                 # format string by replacing tabs, new lines and commas
             txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
-                # remove remaining excess whitespace
-            txt = " ".join(txt.encode('utf-8').split())
+
             urltext.append(UrlData(page_path,txt))
 
         except Exception as e:
@@ -131,7 +130,7 @@ def extract_text(list_of_dict):
             errors.append(page_path)
             print('Returning url text without html parsing')
 
-    print('There were {:d} urls without body text'.format(len(errors)))
+    print('There were {:d} urls with problems extracting text'.format(len(errors)))
     return urltext
 
 
