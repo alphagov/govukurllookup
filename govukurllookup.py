@@ -85,6 +85,7 @@ class UrlData(object):
         self.text = text
 
 def safeget(dct, *keys):
+    #return NoneTyoe instead of key value error if the dictionary key is missing
     for key in keys:
         try:
             dct = dct[key]
@@ -93,31 +94,34 @@ def safeget(dct, *keys):
     return dct
 
 def extract_text(list_of_dict):
-    """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
-    urltext = []
-    errors = []
+    """loop through dictionary list -one dict per url- and extract the url and all content items. Concatenate and clean content items. produce a list of string url, text"""
+    urltext = []# empty list to fill insde loop
+    errors = [] #for counting errors
     for page in list_of_dict:
-
+        #don't fail if there is an exception
         try:
+            #extract items from the dictionary called page
+            #convert path to string from unicode 
             page_path = safeget(page, 'base_path').encode('utf-8').strip()
+            #the following will remain as unicode until line 125
             page_title = safeget(page, 'title')
             page_desc = safeget(page, 'description')
             page_body = safeget(page, 'details','body')
-
+            #change type to unicode if missing to prepare for concatenation
             if page_body is None:
                 page_body = unicode("", "utf-8")
 
             page_parts = safeget(page, 'details','parts') 
             if page_parts is None:
                 page_parts = unicode("", "utf-8")
-
-            page_text =page_body + page_parts
+            
+            page_text =page_body + page_parts#concatenate main body/parts
 
             soup = BeautifulSoup(page_text,'html.parser') #parse html using bs4
                 # kill all script and style elements
             for script in soup(["script", "style"]):
-                script.extract()    # rip it out
-                # concatenate the unicode text fields including all text from soup 
+                script.extract()    # rip out script style elements
+                # concatenate the unicode text fields including all text from soup and convert to string 
             txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
                 # format string by replacing tabs, new lines and commas
             txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
