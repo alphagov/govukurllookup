@@ -99,11 +99,17 @@ def extract_text(list_of_dict):
     for page in list_of_dict:
 
         try:
-            page_path = page['base_path']
-            page_title = page['title']
-            page_desc = page['description']
-            page_body = safeget('details','body')
-            page_parts = safeget('details','parts') 
+            page_path = safeget(page, 'base_path')
+            page_title = safeget(page, 'title')
+            page_desc = safeget(page, 'description')
+            page_body = safeget(page, 'details','body')
+
+            if page_body is None:
+                page_body = unicode("", "utf-8")
+
+            page_parts = safeget(page, 'details','parts') 
+            if page_parts is None:
+                page_parts = unicode("", "utf-8")
 
             page_text =page_body + page_parts
 
@@ -111,8 +117,8 @@ def extract_text(list_of_dict):
                 # kill all script and style elements
             for script in soup(["script", "style"]):
                 script.extract()    # rip it out
-                # extract all text from html 
-            txt = "{0} {0} {0}".format([page_title, page_desc, soup.getText()])
+                # concatenate the unicode text fields including all text from soup 
+            txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
                 # format string by replacing tabs, new lines and commas
             txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
                 # remove remaining excess whitespace
