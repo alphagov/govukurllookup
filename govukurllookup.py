@@ -23,11 +23,6 @@ class govukurls(object):
 
         self.dedupurls = self.urls.drop_duplicates().dropna()
 
-        # Instantiate class objects for later use.
-
-        self.urldicts = pd.Series()
-
-
     def lookup(self):
         """
         Look up urls on GOV.UK content API
@@ -37,8 +32,23 @@ class govukurls(object):
 
         return self.urldicts
 
+    def extract_texts(self):
+        """
+        Loop through all url dicts and extract url and text.
+        """
+
+        # Use the .apply() method to loop through the urldicts series
+        # and extract the text.
+
+        self.urltxt = self.urldicts.apply(extract_text)
+
+        # Convert the urltxt series into a datafram
+
+        self.urltxt = self.urltxt.apply(pd.Series)
+
+        return self.urltxt
+
 def api_lookup(url):
-    
     '''
     Lookup a url on the GOV.UK content API
 
@@ -78,12 +88,6 @@ def api_lookup(url):
 
     return results
 
-
-class UrlData(object):
-    def __init__(self, path, text):
-        self.path = path
-        self.text = text
-
 def safeget(dct, *keys):
     #return NoneTyoe instead of key value error if the dictionary key is missing
     for key in keys:
@@ -93,54 +97,55 @@ def safeget(dct, *keys):
             return None
     return dct
 
-def extract_text(list_of_dict):
-    """loop through dictionary list -one dict per url- and extract the url and all content items. Concatenate and clean content items. produce a list of string url, text"""
-    urltext = []# empty list to fill insde loop
-    errors = [] #for counting errors
-    for page in list_of_dict:
-        #don't fail if there is an exception
-        try:
-            #extract items from the dictionary called page
-            #convert path to string from unicode 
-            page_path = safeget(page, 'base_path').encode('utf-8').strip()
-            #the following will remain as unicode until line 125
-            page_title = safeget(page, 'title')
-            page_desc = safeget(page, 'description')
-            page_body = safeget(page, 'details','body')
-            #change type to unicode if missing to prepare for concatenation
-            if page_body is None:
-                page_body = unicode("", "utf-8")
+def extract_text(page):
+    """
+    For each dictionary extract the url and all content items.
 
-            page_parts = safeget(page, 'details','parts') 
-            if page_parts is None:
-                page_parts = unicode("", "utf-8")
+    Concatenate content items and clean.
+    Give back a dict containing url and text
+    """
+    urltext = dict()
+
+    try:
+
+        page_path = safeget(page, 'base_path').encode('utf-8').strip()
+        page_title = safeget(page, 'title')
+        page_desc = safeget(page, 'description')
+
+        page_body = safeget(page, 'details', 'body')
+
+        if page_body is None:
+            page_body = unicode("", "utf-8")
+
+        page_parts = safeget(page, 'details', 'parts')
+
+        if page_parts is None:
+            page_parts = unicode("", "utf-8")
+
+        page_text = page_body + page_parts
+
+        soup = BeautifulSoup(page_text, 'html.parser')
+         
+         # Remove all script and style elements using BeautifulSoup
+
+        for script in soup(["script", "style"]):
+            script.extract()
             
-            page_text =page_body + page_parts#concatenate main body/parts
+        # Concatenate the unicode text fields including all text from soup
+        
+        txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
+        
+        # Format string by replacing tabs, new lines and commas
+        
+        txt = txt.strip().replace("\t", " ").replace("\r", " ")
+        txt = txt.replace('\n', ' ').replace(',', ' ')
 
-            soup = BeautifulSoup(page_text,'html.parser') #parse html using bs4
-                # kill all script and style elements
-            for script in soup(["script", "style"]):
-                script.extract()    # rip out script style elements
-                # concatenate the unicode text fields including all text from soup and convert to string 
-            txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
-                # format string by replacing tabs, new lines and commas
-            txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
+        urltext['url'] = page_path
+        urltext['text'] = txt
 
-            urltext.append(UrlData(page_path,txt))
+    except Exception as exc:
+        print(exc)
+        print('Error extracting text from ' + page_path)
+        print('Returning url text without html parsing')
 
-        except Exception as e:
-            print(e)
-            print('Error extracting text from ' + page_path)
-            errors.append(page_path)
-            print('Returning url text without html parsing')
-
-    print('There were {:d} urls with problems extracting text'.format(len(errors)))
     return urltext
-
-
-
-
-
-
-
-
