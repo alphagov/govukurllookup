@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.org/ukgovdatascience/govukurllookup.svg?branch=master)](https://travis-ci.org/ukgovdatascience/govukurllookup)
 [![codecov](https://codecov.io/gh/ukgovdatascience/govukurllookup/branch/master/graph/badge.svg)](https://codecov.io/gh/ukgovdatascience/govukurllookup)
+[![GitHub tag](https://img.shields.io/github/tag/ukgovdatascience/govukurlookup.svg)](https://github.com/ukgovdatascience/govukurllookup/releases)
 
-# Helper module for using the GOV.UK content API (v0.0.0.9002)
+# Helper module for using the GOV.UK content API
 
 Helper module for returning data from the GOV.UK content API.
 
