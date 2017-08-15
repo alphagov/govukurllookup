@@ -4,6 +4,7 @@
 
 import pytest
 import requests
+import sys
 from govukurllookup import api_lookup, govukurls
 import pandas as pd
 
@@ -79,10 +80,26 @@ class TestGovukurls(object):
         The test will be skipped if this is not available.
         """
 
-        # Run lookup methos
+        # Run lookup method
 
         self.urlsclass.lookup()
 
         assert len(self.urlsclass.urldicts) == len(self.urlsclass.dedupurls)
-        
+
         # TODO: test a redirect url
+
+    @pytest.mark.skipif(sys.version_info >= (3,6), reason="requires python 2.7")
+    def test_extract_text(self):
+        """
+        Test the extract_text() method.
+
+        """
+
+        # Run lookup and extract_text methods
+
+        self.urlsclass.lookup()
+        self.urlsclass.extract_texts()
+
+        assert len(self.urlsclass.urldicts) == len(self.urlsclass.urltxt)
+        assert self.urlsclass.urltxt.shape == (20, 2)
+        assert self.urlsclass.urltxt.iloc[0, 1] == '/business-support-helpline'

@@ -23,11 +23,6 @@ class govukurls(object):
 
         self.dedupurls = self.urls.drop_duplicates().dropna()
 
-        # Instantiate class objects for later use.
-
-        self.urldicts = pd.Series()
-
-
     def lookup(self):
         """
         Look up urls on GOV.UK content API
@@ -37,8 +32,23 @@ class govukurls(object):
 
         return self.urldicts
 
+    def extract_texts(self):
+        """
+        Loop through all url dicts and extract url and text.
+        """
+
+        # Use the .apply() method to loop through the urldicts series
+        # and extract the text.
+
+        self.urltxt = self.urldicts.apply(extract_text)
+
+        # Convert the urltxt series into a datafram
+
+        self.urltxt = self.urltxt.apply(pd.Series)
+
+        return self.urltxt
+
 def api_lookup(url):
-    
     '''
     Lookup a url on the GOV.UK content API
 
@@ -78,13 +88,8 @@ def api_lookup(url):
 
     return results
 
-
-class UrlData(object):
-    def __init__(self, path, text):
-        self.path = path
-        self.text = text
-
 def safeget(dct, *keys):
+    #return NoneTyoe instead of key value error if the dictionary key is missing
     for key in keys:
         try:
             dct = dct[key]
@@ -92,46 +97,55 @@ def safeget(dct, *keys):
             return None
     return dct
 
-def extract_text(list_of_dict):
-    """loop through list and for each dictionary extract the url and all contnet items. Concatenate content items and clean. Give back a url, text list"""
-    urltext = []
-    errors = []
-    for page in list_of_dict:
+def extract_text(page):
+    """
+    For each dictionary extract the url and all content items.
 
-        try:
-            page_path = page['base_path']
-            page_title = page['title']
-            page_desc = page['description']
-            page_body = safeget('details','body')
-            page_parts = safeget('details','parts') 
+    Concatenate content items and clean.
+    Give back a dict containing url and text
+    """
+    urltext = dict.fromkeys(['url', 'text'])
 
-            page_text =page_body + page_parts
+    try:
 
-            soup = BeautifulSoup(page_text,'html.parser') #parse html using bs4
-                # kill all script and style elements
-            for script in soup(["script", "style"]):
-                script.extract()    # rip it out
-                # extract all text from html 
-            txt = "{0} {0} {0}".format([page_title, page_desc, soup.getText()])
-                # format string by replacing tabs, new lines and commas
-            txt = txt.strip().replace("\t", " ").replace("\r", " ").replace('\n', ' ').replace(',', ' ')
-                # remove remaining excess whitespace
-            txt = " ".join(txt.encode('utf-8').split())
-            urltext.append(UrlData(page_path,txt))
+        page_path = safeget(page, 'base_path').encode('utf-8').strip()
+        page_title = safeget(page, 'title')
+        page_desc = safeget(page, 'description')
 
-        except Exception as e:
-            print(e)
-            print('Error extracting text from ' + page_path)
-            errors.append(page_path)
-            print('Returning url text without html parsing')
+        page_body = safeget(page, 'details', 'body')
 
-    print('There were {:d} urls without body text'.format(len(errors)))
+        if page_body is None:
+            page_body = unicode("", "utf-8")
+
+        page_parts = safeget(page, 'details', 'parts')
+
+        if page_parts is None:
+            page_parts = unicode("", "utf-8")
+
+        page_text = page_body + page_parts
+
+        soup = BeautifulSoup(page_text, 'html.parser')
+         
+         # Remove all script and style elements using BeautifulSoup
+
+        for script in soup(["script", "style"]):
+            script.extract()
+            
+        # Concatenate the unicode text fields including all text from soup
+        
+        txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
+        
+        # Format string by replacing tabs, new lines and commas
+        
+        txt = txt.strip().replace("\t", " ").replace("\r", " ")
+        txt = txt.replace('\n', ' ').replace(',', ' ')
+
+        urltext['url'] = page_path
+        urltext['text'] = txt
+
+    except Exception as exc:
+        print(exc)
+        print('Error extracting text from ' + page_path)
+        print('Returning url text without html parsing')
+
     return urltext
-
-
-
-
-
-
-
-
