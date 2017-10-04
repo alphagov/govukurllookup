@@ -62,7 +62,7 @@ class govukurls(object):
 
         self.url_tit_des = self.url_tit_des.apply(pd.Series)
 
-        return self.urltxt
+        return self.url_tit_des
 
 def api_lookup(url):
     '''
@@ -166,7 +166,7 @@ def extract_text(page):
 
     return urltext
 
-    def extract_title_desc(page):
+def extract_title_desc(page):
     """
     For each dictionary extract the url and page title and description.
 
@@ -178,8 +178,8 @@ def extract_text(page):
     try:
 
         page_path = safeget(page, 'base_path').encode('utf-8').strip()
-        page_title = safeget(page, 'title')
-        page_desc = safeget(page, 'description')
+        page_title = safeget(page, 'title').encode('utf-8')
+        page_desc = safeget(page, 'description').encode('utf-8')
         
         # Format string by replacing tabs, new lines and commas
         
