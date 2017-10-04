@@ -48,6 +48,22 @@ class govukurls(object):
 
         return self.urltxt
 
+    def extract_titles_descs(self):
+        """
+        Loop through all url dicts and extract url and title and description.
+        """
+
+        # Use the .apply() method to loop through the urldicts series
+        # and extract the titel and description.
+
+        self.url_tit_des = self.urldicts.apply(extract_title_desc)
+
+        # Convert the url_tit_des series into a datafram
+
+        self.url_tit_des = self.url_tit_des.apply(pd.Series)
+
+        return self.urltxt
+
 def api_lookup(url):
     '''
     Lookup a url on the GOV.UK content API
@@ -149,3 +165,36 @@ def extract_text(page):
         print('Returning url text without html parsing')
 
     return urltext
+
+    def extract_title_desc(page):
+    """
+    For each dictionary extract the url and page title and description.
+
+    Concatenate content items and clean.
+    Give back a dict containing url and text (title only)
+    """
+    url_tit_des = dict.fromkeys(['url', 'title', 'desc'])
+
+    try:
+
+        page_path = safeget(page, 'base_path').encode('utf-8').strip()
+        page_title = safeget(page, 'title')
+        page_desc = safeget(page, 'description')
+        
+        # Format string by replacing tabs, new lines and commas
+        
+        page_title = page_title.strip().replace("\t", " ").replace("\r", " ")
+        page_title = page_title.replace('\n', ' ').replace(',', ' ')
+        page_desc = page_desc.strip().replace("\t", " ").replace("\r", " ")
+        page_desc = page_desc.replace('\n', ' ').replace(',', ' ')
+
+        url_tit_des['url'] = page_path
+        url_tit_des['title'] = page_title
+        url_tit_des['desc'] = page_desc
+
+    except Exception as exc:
+        print(exc)
+        print('Error extracting text from ' + page_path)
+        print('Returning url text without html parsing')
+
+    return url_tit_des
