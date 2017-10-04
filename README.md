@@ -38,3 +38,14 @@ foo.lookup()
 foo.urldicts
 
 ```
+
+Additional functions for extracting content from returned json, include:
+```
+# extract_texts, which combines title, description, and body text into a single series in a panda dataframe, along with url.
+
+urltext = foo.extract_texts() 
+
+# extract_titles_descs, which creates a dataframe of url and title and description in separate columns.
+
+url_title_desc = foo.extract_titles_descs()
+```
