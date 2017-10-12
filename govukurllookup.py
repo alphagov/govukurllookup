@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+from tqdm import tqdm, tqdm_pandas
 
 class govukurls(object):
     """
@@ -27,8 +28,11 @@ class govukurls(object):
         """
         Look up urls on GOV.UK content API
         """
+        # Create and register a new `tqdm` instance with `pandas`
+        # (can use tqdm_gui, optional kwargs, etc.)
+        tqdm_pandas(tqdm())
 
-        self.urldicts = self.dedupurls.apply(api_lookup)
+        self.urldicts = self.dedupurls.progress_apply(api_lookup)
 
         return self.urldicts
 
@@ -226,7 +230,7 @@ def extract_meta(page):
     Concatenate content items and clean.
     Give back a dict containing url and text (title only)
     """
-    meta = dict.fromkeys(['url', 'title', 'desc', 'text', 'doc_type', 'pub_date', 'pub_app', ])
+    meta_page = dict.fromkeys(['url', 'title', 'desc', 'text', 'doc_type', 'pub_date', 'pub_app', ])
 
     try:
 
@@ -266,17 +270,17 @@ def extract_meta(page):
         page_desc = tidy(page_desc)
         page_text = tidy(text)
 
-        meta['url'] = page_path
-        meta['title'] = page_title
-        meta['desc'] = page_desc
-        meta['text'] = page_text
-        meta['doc_type'] = page_doctype
-        meta['pub_date'] = page_pubdate
-        meta['pub_app'] = page_pubapp
+        meta_page['url'] = page_path
+        meta_page['title'] = page_title
+        meta_page['desc'] = page_desc
+        meta_page['text'] = page_text
+        meta_page['doc_type'] = page_doctype
+        meta_page['pub_date'] = page_pubdate
+        meta_page['pub_app'] = page_pubapp
 
     except Exception as exc:
         print(exc)
         print('Error extracting text from ' + page_path)
         print('Returning url text without html parsing')
 
-    return meta
+    return meta_page
