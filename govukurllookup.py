@@ -64,6 +64,22 @@ class govukurls(object):
 
         return self.url_tit_des
 
+    def extract_meta_and_texts(self):
+        """
+        Loop through all url dicts and extract url and title and description.
+        """
+
+        # Use the .apply() method to loop through the urldicts series
+        # and extract the titel and description.
+
+        self.meta = self.urldicts.apply(extract_meta)
+
+        # Convert the url_tit_des series into a datafram
+
+        self.meta = self.meta.apply(pd.Series)
+
+        return self.meta
+
 def api_lookup(url):
     '''
     Lookup a url on the GOV.UK content API
@@ -113,6 +129,12 @@ def safeget(dct, *keys):
             return None
     return dct
 
+def tidy(stringitem):
+    #return string without tab, newlines, commas
+    tidystring = stringitem.strip().replace("\t", " ").replace("\r", " ")
+    tidystring = tidystring.replace('\n', ' ').replace(',', ' ')
+    return tidystring
+
 def extract_text(page):
     """
     For each dictionary extract the url and all content items.
@@ -161,7 +183,7 @@ def extract_text(page):
 
     except Exception as exc:
         print(exc)
-        print('Error extracting text from ' + page_path)
+        print('Error extracting text from ' + str(page_path))
         print('Returning url text without html parsing')
 
     return urltext
@@ -183,10 +205,8 @@ def extract_title_desc(page):
         
         # Format string by replacing tabs, new lines and commas
         
-        page_title = page_title.strip().replace("\t", " ").replace("\r", " ")
-        page_title = page_title.replace('\n', ' ').replace(',', ' ')
-        page_desc = page_desc.strip().replace("\t", " ").replace("\r", " ")
-        page_desc = page_desc.replace('\n', ' ').replace(',', ' ')
+        page_title = tidy(page_title)
+        page_desc = tidy(page_desc)
 
         url_tit_des['url'] = page_path
         url_tit_des['title'] = page_title
@@ -198,3 +218,65 @@ def extract_title_desc(page):
         print('Returning url text without html parsing')
 
     return url_tit_des
+
+def extract_meta(page):
+    """
+    For each dictionary extract the url and page title and description.
+
+    Concatenate content items and clean.
+    Give back a dict containing url and text (title only)
+    """
+    meta = dict.fromkeys(['url', 'title', 'desc', 'text', 'doc_type', 'pub_date', 'pub_app', ])
+
+    try:
+
+        page_path = safeget(page, 'base_path').encode('utf-8').strip()
+        page_title = safeget(page, 'title').encode('utf-8')
+        page_desc = safeget(page, 'description').encode('utf-8')
+        page_doctype = safeget(page, 'document_type').encode('utf-8')
+        page_pubdate = safeget(page, 'first_published_at').encode('utf-8')
+        page_pubapp = safeget(page, 'publishing_app').encode('utf-8')
+
+        page_body = safeget(page, 'details', 'body')
+
+        if page_body is None:
+            page_body = unicode("", "utf-8")
+
+        page_parts = safeget(page, 'details', 'parts')
+
+        if page_parts is None:
+            page_parts = unicode("", "utf-8")
+
+        page_text = page_body + page_parts
+
+        soup = BeautifulSoup(page_text, 'html.parser')
+         
+         # Remove all script and style elements using BeautifulSoup
+
+        for script in soup(["script", "style"]):
+            script.extract()
+            
+
+        
+        text = soup.getText().encode('utf-8').strip()
+        
+        # Format string by replacing tabs, new lines and commas
+        
+        page_title = tidy(page_title)
+        page_desc = tidy(page_desc)
+        page_text = tidy(text)
+
+        meta['url'] = page_path
+        meta['title'] = page_title
+        meta['desc'] = page_desc
+        meta['text'] = page_text
+        meta['doc_type'] = page_doctype
+        meta['pub_date'] = page_pubdate
+        meta['pub_app'] = page_pubapp
+
+    except Exception as exc:
+        print(exc)
+        print('Error extracting text from ' + page_path)
+        print('Returning url text without html parsing')
+
+    return meta
