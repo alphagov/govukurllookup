@@ -230,7 +230,7 @@ def extract_meta(page):
     Concatenate content items and clean.
     Give back a dict containing url and text (title only)
     """
-    meta_page = dict.fromkeys(['url', 'title', 'desc', 'text', 'doc_type', 'pub_date', 'pub_app', ])
+    meta_page = dict.fromkeys(['url', 'title', 'desc', 'text', 'doc_type', 'pub_date', 'pub_app', 'pub_title',])
 
     try:
 
@@ -240,6 +240,7 @@ def extract_meta(page):
         page_doctype = safeget(page, 'document_type').encode('utf-8')
         page_pubdate = safeget(page, 'first_published_at').encode('utf-8')
         page_pubapp = safeget(page, 'publishing_app').encode('utf-8')
+        page_pubtitle = safeget(page, 'primary_publishing_organisation', 'Driver and Vehicle Licensing Agency')
 
         page_body = safeget(page, 'details', 'body')
 
@@ -277,6 +278,7 @@ def extract_meta(page):
         meta_page['doc_type'] = page_doctype
         meta_page['pub_date'] = page_pubdate
         meta_page['pub_app'] = page_pubapp
+        meta_page['pub_title'] = page_pubtitle
 
     except Exception as exc:
         print(exc)
