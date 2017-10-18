@@ -7,7 +7,7 @@ from datetime import datetime
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from tqdm import tqdm, tqdm_pandas
+from tqdm import tqdm
 
 class govukurls(object):
     """
@@ -30,7 +30,7 @@ class govukurls(object):
         """
         # Create and register a new `tqdm` instance with `pandas`
         # (can use tqdm_gui, optional kwargs, etc.)
-        tqdm_pandas(tqdm())
+        tqdm.pandas(desc="api lookup progress")
 
         self.urldicts = self.dedupurls.progress_apply(api_lookup)
 
