@@ -32,7 +32,7 @@ class govukurls(object):
         # (can use tqdm_gui, optional kwargs, etc.)
         tqdm.pandas(desc="api lookup progress")
 
-        self.urldicts = self.dedupurls.progress_apply(api_lookup)
+        self.urldicts = self.dedupurls.apply(api_lookup)
 
         return self.urldicts
 
@@ -240,7 +240,7 @@ def extract_meta(page):
         page_doctype = safeget(page, 'document_type').encode('utf-8')
         page_pubdate = safeget(page, 'first_published_at').encode('utf-8')
         page_pubapp = safeget(page, 'publishing_app').encode('utf-8')
-        page_pubtitle = safeget(page, 'primary_publishing_organisation', 'Driver and Vehicle Licensing Agency')
+        page_pubtitle = safeget(page, 'links', 'primary_publishing_organisation', 'title')
 
         page_body = safeget(page, 'details', 'body')
 
