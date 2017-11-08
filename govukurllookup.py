@@ -108,21 +108,14 @@ def extract_text(page):
 
     try:
 
-        page_path = safeget(page, 'base_path').encode('utf-8').strip()
+        page_path = safeget(page, 'base_path').strip()
         page_title = safeget(page, 'title')
         page_desc = safeget(page, 'description')
 
         page_body = safeget(page, 'details', 'body')
-
-        if page_body is None:
-            page_body = unicode("", "utf-8")
-
         page_parts = safeget(page, 'details', 'parts')
 
-        if page_parts is None:
-            page_parts = unicode("", "utf-8")
-
-        page_text = page_body + page_parts
+        page_text = (page_body or "") + (page_parts or "")
 
         soup = BeautifulSoup(page_text, 'html.parser')
          
@@ -133,7 +126,7 @@ def extract_text(page):
             
         # Concatenate the unicode text fields including all text from soup
         
-        txt = u' '.join((page_title, page_desc, soup.getText())).encode('utf-8').strip()
+        txt = ' '.join((page_title, page_desc, soup.getText())).strip()
         
         # Format string by replacing tabs, new lines and commas
         
