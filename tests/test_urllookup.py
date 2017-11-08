@@ -68,7 +68,7 @@ class TestGovukurls(object):
 
         expected = requests.get(expected_url).json()
 
-        assert api_lookup(self.urlsclass.dedupurls[0]) == expected
+        assert api_lookup(self.urlsclass.dedupurls[0], 'https://www.gov.uk/api/content') == expected
 
     @pytest.mark.skipif(not is_connected(), reason="Cannot connect to gov.uk")
     def test_lookup_method(self):
