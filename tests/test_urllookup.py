@@ -4,7 +4,6 @@
 
 import pytest
 import requests
-import sys
 from govukurllookup import api_lookup, govukurls
 import pandas as pd
 
@@ -88,7 +87,6 @@ class TestGovukurls(object):
 
         # TODO: test a redirect url
 
-    @pytest.mark.skipif(sys.version_info >= (3,6), reason="requires python 2.7")
     def test_extract_text(self):
         """
         Test the extract_text() method.
