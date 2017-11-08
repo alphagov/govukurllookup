@@ -13,12 +13,13 @@ class govukurls(object):
     Clean and handle GOV.UK urls.
     """
 
-    def __init__(self, urls):
+    def __init__(self, urls, content_store_url="https://www.gov.uk/api/content"):
         """
         Check that x is a pd series.
         """
 
         self.urls = urls
+        self.content_store_url = content_store_url
         assert isinstance(self.urls, pd.core.series.Series)
 
         self.dedupurls = self.urls.drop_duplicates().dropna()
@@ -28,7 +29,9 @@ class govukurls(object):
         Look up urls on GOV.UK content API
         """
 
-        self.urldicts = self.dedupurls.apply(api_lookup)
+        self.urldicts = self.dedupurls.apply(
+            api_lookup, args=(self.content_store_url,)
+        )
 
         return self.urldicts
 
@@ -48,7 +51,7 @@ class govukurls(object):
 
         return self.urltxt
 
-def api_lookup(url):
+def api_lookup(base_path, content_store_url):
     '''
     Lookup a url on the GOV.UK content API
 
@@ -57,34 +60,30 @@ def api_lookup(url):
     '''
     # Form the api url
 
-    api_url = "https://www.gov.uk/api/content{}".format(url)
+    url = content_store_url + base_path
 
     try:
 
         # Lookup the url and return the json
 
-        results = requests.get(api_url).json()
+        results = requests.get(url).json()
 
         # Check whether api returned a redirect, and if so look up the api_url
         # using a standard http call so that we are returned the redirect url.
 
         if results['document_type'] == "redirect":
-            redirect_url = "https://www.gov.uk" + url
+            redirect_url = "https://www.gov.uk" + base_path
             redirect = requests.get(redirect_url)
 
             # Extract redirected url, and use this in a new call to the
             # content api.
 
-            redirected_url = redirect.url
-            redirected_api = redirected_url.replace(
-                "https://www.gov.uk",
-                "https://www.gov.uk/api/content"
-                )
+            redirected_api = content_store_url + redirect.url.path
             results = requests.get(redirected_api).json()
 
     except Exception as e:
         print(e)
-        print('Error looking up ' + api_url)
+        print('Error looking up ' + url)
 
     return results
 
